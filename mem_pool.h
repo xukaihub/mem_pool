@@ -52,4 +52,13 @@ void mem_free(mem_pool *pool, void *ptr);
  */
 void print_memory_usage(mem_pool *pool);
 
+/**
+ * 获取内存池的内存信息。
+ *
+ * @param pool 内存池句柄
+ * @param total_size 存储总内存大小的变量的指针
+ * @param free_size 存储空闲内存大小的变量的指针
+ */
+void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size);
+
 #endif /* MEM_POOL_H */

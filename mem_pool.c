@@ -7,13 +7,15 @@
 
 typedef struct mem_block {
     void *start;
-    int size;
+    size_t size;
     int used;
     struct mem_block *next;
 } mem_block;
 
 struct mem_pool {
-    mem_block *head;
+    void *start;
+    size_t size;
+    struct mem_block *head;
 };
 
 mem_pool *mem_init(void *start, size_t size)
@@ -25,22 +27,26 @@ mem_pool *mem_init(void *start, size_t size)
 
     mem_pool *pool = (mem_pool *)malloc(sizeof(mem_pool));
     if (pool == NULL) {
-        printf("Failed to initialize memory manager\n");
+        printf("Failed to initialize memory pool\n");
         return NULL;
     }
 
-    pool->head = (mem_block *)malloc(sizeof(mem_block));
-    if (pool->head == NULL) {
+    pool->start = start;
+    pool->size = size;
+    pool->head = NULL;
+    mem_block *block = (mem_block *)malloc(sizeof(mem_block));
+    if (block == NULL) {
         printf("Failed to initialize memory block\n");
         free(pool);
         return NULL;
     }
 
-    pool->head->start = start;
-    pool->head->size = size;
-    pool->head->used = 0;
-    pool->head->next = NULL;
+    block->start = start;
+    block->size = size;
+    block->used = 0;
+    block->next = NULL;
 
+    pool->head = block;
     return pool;
 }
 
@@ -55,7 +61,7 @@ void print_used_blocks(mem_pool *pool)
     mem_block *block = pool->head;
     while (block) {
         if (block->used) {
-            printf("Start: %p, Size: %d\n", block->start, block->size);
+            printf("Start: %p, Size: %zu\n", block->start, block->size);
         }
         block = block->next;
     }
@@ -72,7 +78,7 @@ void print_free_blocks(mem_pool *pool)
     mem_block *block = pool->head;
     while (block) {
         if (!block->used) {
-            printf("Start: %p, Size: %d\n", block->start, block->size);
+            printf("Start: %p, Size: %zu\n", block->start, block->size);
         }
         block = block->next;
     }
@@ -188,4 +194,24 @@ void print_memory_usage(mem_pool *pool)
         }
     }
     printf("\n");
+}
+
+void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size) {
+    if (pool == NULL || total_size == NULL || free_size == NULL) {
+        printf("Invalid arguments\n");
+        return;
+    }
+
+    *total_size = pool->size;
+
+    size_t used_size = 0;
+    mem_block *block = pool->head;
+    while (block) {
+        if (block->used) {
+            used_size += block->size;
+        }
+        block = block->next;
+    }
+
+    *free_size = pool->size - used_size;
 }

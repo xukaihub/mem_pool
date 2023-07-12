@@ -11,6 +11,7 @@ int main() {
     static char memory[MEMORY_SIZE];
     mem_pool *pool = mem_init(memory, sizeof(memory));
     if (pool == NULL) {
+        printf("Memory pool initialization failed\n");
         return 1;
     }
 
@@ -48,6 +49,10 @@ int main() {
     print_free_blocks(pool);
     print_memory_usage(pool);
 
+    size_t total_size, free_size;
+    get_memory_info(pool, &total_size, &free_size);
+    printf("Total memory size: %zu\n", total_size);
+    printf("Free memory size: %zu\n", free_size);
     for (size_t i = 0; i < pointers_size / 2; i++) {
         int index = rand() % (int)pointers_size;
         if (pointers[index] != NULL) {
@@ -61,6 +66,10 @@ int main() {
     print_free_blocks(pool);
     print_memory_usage(pool);
 
+    get_memory_info(pool, &total_size, &free_size);
+    printf("Total memory size: %zu\n", total_size);
+    printf("Free memory size: %zu\n", free_size);
+
     for (size_t i = 0; i < pointers_size; i++) {
         if (pointers[i] != NULL) {
             mem_free(pool, pointers[i]);
@@ -72,6 +81,10 @@ int main() {
     print_used_blocks(pool);
     print_free_blocks(pool);
     print_memory_usage(pool);
+
+    get_memory_info(pool, &total_size, &free_size);
+    printf("Total memory size: %zu\n", total_size);
+    printf("Free memory size: %zu\n", free_size);
 
     free(pointers);
 
