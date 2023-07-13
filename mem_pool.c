@@ -20,7 +20,7 @@ struct mem_pool {
     mem_pool_lock *lock;
 };
 
-mem_pool *mem_init(void *start, size_t size)
+mem_pool *mem_pool_init(void *start, size_t size)
 {
     if (start == NULL || size == 0) {
         printf("Invalid start address or size\n");
@@ -61,7 +61,7 @@ mem_pool *mem_init(void *start, size_t size)
     return pool;
 }
 
-void print_used_blocks(mem_pool *pool)
+void mem_pool_print_used_blocks(mem_pool *pool)
 {
     if (pool == NULL) {
         printf("Invalid memory pool\n");
@@ -80,7 +80,7 @@ void print_used_blocks(mem_pool *pool)
     mem_pool_lock_release(pool->lock);
 }
 
-void print_free_blocks(mem_pool *pool)
+void mem_pool_print_free_blocks(mem_pool *pool)
 {
     if (pool == NULL) {
         printf("Invalid memory pool\n");
@@ -99,7 +99,7 @@ void print_free_blocks(mem_pool *pool)
     mem_pool_lock_release(pool->lock);
 }
 
-void *mem_malloc(mem_pool *pool, size_t size)
+void *mem_pool_malloc(mem_pool *pool, size_t size)
 {
     if (pool == NULL) {
         printf("Invalid memory pool\n");
@@ -146,7 +146,7 @@ void *mem_malloc(mem_pool *pool, size_t size)
     return NULL;
 }
 
-void mem_free(mem_pool *pool, void *ptr)
+void mem_pool_free(mem_pool *pool, void *ptr)
 {
     if (pool == NULL) {
         printf("Invalid memory pool\n");
@@ -191,7 +191,7 @@ void mem_free(mem_pool *pool, void *ptr)
 #define UNUSED_SYMBOL     '.'
 #define PRINT_BLOCK(flag) printf("%c", (flag) ? USED_SYMBOL : UNUSED_SYMBOL)
 
-void print_memory_usage(mem_pool *pool)
+void mem_pool_print_memory_usage(mem_pool *pool)
 {
     if (pool == NULL) {
         printf("Invalid memory pool\n");
@@ -226,7 +226,8 @@ void print_memory_usage(mem_pool *pool)
     printf("\n");
 }
 
-void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size) {
+void mem_pool_get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size)
+{
     if (pool == NULL || total_size == NULL || free_size == NULL) {
         printf("Invalid arguments\n");
         return;

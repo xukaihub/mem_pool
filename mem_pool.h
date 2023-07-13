@@ -6,65 +6,66 @@
 typedef struct mem_pool mem_pool;
 
 /**
- * 初始化内存池。
+ * Initialize the memory pool.
  *
- * @param start 内存池的起始地址
- * @param size 内存池的大小
- * @return 内存池的句柄，若初始化失败则返回 NULL
+ * @param start The starting address of the memory pool.
+ * @param size The size of the memory pool.
+ * @return The handle to the memory pool. Returns NULL if initialization fails.
  */
-mem_pool *mem_init(void *start, size_t size);
+mem_pool *mem_pool_init(void *start, size_t size);
 
 /**
- * 打印已使用的内存块。
+ * Print the used memory blocks.
  *
- * @param pool 内存池句柄
+ * @param pool The memory pool handle.
  */
-void print_used_blocks(mem_pool *pool);
+void mem_pool_print_used_blocks(mem_pool *pool);
 
 /**
- * 打印空闲的内存块。
+ * Print the free memory blocks.
  *
- * @param pool 内存池句柄
+ * @param pool The memory pool handle.
  */
-void print_free_blocks(mem_pool *pool);
+void mem_pool_print_free_blocks(mem_pool *pool);
 
 /**
- * 分配指定大小的内存块。
+ * Allocate a memory block of the specified size.
  *
- * @param pool 内存池句柄
- * @param size 要分配的内存块大小
- * @return 分配的内存块的指针，若分配失败则返回 NULL
+ * @param pool The memory pool handle.
+ * @param size The size of the memory block to allocate.
+ * @return The pointer to the allocated memory block. Returns NULL if allocation fails.
  */
-void *mem_malloc(mem_pool *pool, size_t size);
+void *mem_pool_malloc(mem_pool *pool, size_t size);
 
 /**
- * 释放指定的内存块。
+ * Free the specified memory block.
  *
- * @param pool 内存池句柄
- * @param ptr 要释放的内存块的指针
+ * @param pool The memory pool handle.
+ * @param ptr The pointer to the memory block to free.
  */
-void mem_free(mem_pool *pool, void *ptr);
+void mem_pool_free(mem_pool *pool, void *ptr);
 
 /**
- * 打印内存使用情况（0 表示空闲，1 表示已使用）。
+ * Print the memory usage.
  *
- * @param pool 内存池句柄
+ * @param pool The memory pool handle.
  */
-void print_memory_usage(mem_pool *pool);
+void mem_pool_print_memory_usage(mem_pool *pool);
 
 /**
- * 获取内存池的内存信息。
+ * Get the memory information of the memory pool.
  *
- * @param pool 内存池句柄
- * @param total_size 存储总内存大小的变量的指针
- * @param free_size 存储空闲内存大小的变量的指针
+ * @param pool The memory pool handle.
+ * @param total_size A pointer to a variable to store the total memory size.
+ * @param free_size A pointer to a variable to store the free memory size.
  */
-void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size);
+void mem_pool_get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size);
 
 /**
- * 销毁内存池及相关资源
- * 注意：调用该函数后，不应再访问已释放的内存池及其相关资源。
- * @param pool 内存池
+ * Destroy the memory pool and release the associated resources.
+ * Note: After calling this function, accessing the released memory pool and its associated resources should be avoided.
+ *
+ * @param pool The memory pool handle.
  */
 void mem_pool_destroy(mem_pool *pool);
 

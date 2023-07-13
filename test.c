@@ -9,7 +9,7 @@
 
 int main() {
     static char memory[MEMORY_SIZE];
-    mem_pool *pool = mem_init(memory, sizeof(memory));
+    mem_pool *pool = mem_pool_init(memory, sizeof(memory));
     if (pool == NULL) {
         printf("Memory pool initialization failed\n");
         return 1;
@@ -35,7 +35,7 @@ int main() {
     for (size_t i = 0; i < pointers_size; i++) {
         size_t size = rand() % max_size + 1;
 
-        void *ptr = mem_malloc(pool, size);
+        void *ptr = mem_pool_malloc(pool, size);
         if (ptr == NULL) {
             printf("Memory allocation failed\n");
             return 1;
@@ -45,44 +45,44 @@ int main() {
         printf("Allocated memory at %p, size = %zu\n", ptr, size);
     }
 
-    print_used_blocks(pool);
-    print_free_blocks(pool);
-    print_memory_usage(pool);
+    mem_pool_print_used_blocks(pool);
+    mem_pool_print_free_blocks(pool);
+    mem_pool_print_memory_usage(pool);
 
     size_t total_size, free_size;
-    get_memory_info(pool, &total_size, &free_size);
+    mem_pool_get_memory_info(pool, &total_size, &free_size);
     printf("Total memory size: %zu\n", total_size);
     printf("Free memory size: %zu\n", free_size);
     for (size_t i = 0; i < pointers_size / 2; i++) {
         int index = rand() % (int)pointers_size;
         if (pointers[index] != NULL) {
-            mem_free(pool, pointers[index]);
+            mem_pool_free(pool, pointers[index]);
             printf("Freed memory at %p\n", pointers[index]);
             pointers[index] = NULL;
         }
     }
 
-    print_used_blocks(pool);
-    print_free_blocks(pool);
-    print_memory_usage(pool);
+    mem_pool_print_used_blocks(pool);
+    mem_pool_print_free_blocks(pool);
+    mem_pool_print_memory_usage(pool);
 
-    get_memory_info(pool, &total_size, &free_size);
+    mem_pool_get_memory_info(pool, &total_size, &free_size);
     printf("Total memory size: %zu\n", total_size);
     printf("Free memory size: %zu\n", free_size);
 
     for (size_t i = 0; i < pointers_size; i++) {
         if (pointers[i] != NULL) {
-            mem_free(pool, pointers[i]);
+            mem_pool_free(pool, pointers[i]);
             printf("Freed memory at %p\n", pointers[i]);
             pointers[i] = NULL;
         }
     }
 
-    print_used_blocks(pool);
-    print_free_blocks(pool);
-    print_memory_usage(pool);
+    mem_pool_print_used_blocks(pool);
+    mem_pool_print_free_blocks(pool);
+    mem_pool_print_memory_usage(pool);
 
-    get_memory_info(pool, &total_size, &free_size);
+    mem_pool_get_memory_info(pool, &total_size, &free_size);
     printf("Total memory size: %zu\n", total_size);
     printf("Free memory size: %zu\n", free_size);
 
