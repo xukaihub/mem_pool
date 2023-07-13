@@ -187,6 +187,10 @@ void mem_free(mem_pool *pool, void *ptr)
     }
 }
 
+#define USED_SYMBOL       '#'
+#define UNUSED_SYMBOL     '.'
+#define PRINT_BLOCK(flag) printf("%c", (flag) ? USED_SYMBOL : UNUSED_SYMBOL)
+
 void print_memory_usage(mem_pool *pool)
 {
     if (pool == NULL) {
@@ -194,13 +198,13 @@ void print_memory_usage(mem_pool *pool)
         return;
     }
 
-    printf("Memory usage (0: free, 1: used):\n");
+    printf("Memory usage (%c: free, %c: used):\n", UNUSED_SYMBOL, USED_SYMBOL);
     char *cursor = (char *)pool->head->start;
     int bit_count = 0;
     mem_pool_lock_acquire(pool->lock);
     for (mem_block *block = pool->head; block; block = block->next) {
         while (cursor < (char *)block->start) {
-            printf("0");
+            PRINT_BLOCK(0);
             cursor += ALIGNMENT;
             bit_count++;
             if (bit_count == BITS_PER_LINE) {
@@ -209,7 +213,7 @@ void print_memory_usage(mem_pool *pool)
             }
         }
         while (cursor < (char *)block->start + block->size) {
-            printf("%d", block->used);
+            PRINT_BLOCK(block->used);
             cursor += ALIGNMENT;
             bit_count++;
             if (bit_count == BITS_PER_LINE) {
