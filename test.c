@@ -88,5 +88,7 @@ int main() {
 
     free(pointers);
 
+    mem_pool_destroy(pool);
+
     return 0;
 }

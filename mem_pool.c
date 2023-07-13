@@ -247,3 +247,26 @@ void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size) {
 
     *free_size = pool->size - used_size;
 }
+
+void mem_pool_destroy(mem_pool *pool)
+{
+    if (pool == NULL) {
+        return;
+    }
+
+    mem_pool_lock_acquire(pool->lock);
+
+    mem_block *block = pool->head;
+    while (block) {
+        mem_block *next = block->next;
+        free(block);
+        block = next;
+    }
+
+    mem_pool_lock_release(pool->lock);
+
+    mem_pool_lock_destroy(pool->lock);
+    pool->lock = NULL;
+
+    free(pool);
+}

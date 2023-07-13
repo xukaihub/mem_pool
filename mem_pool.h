@@ -61,4 +61,11 @@ void print_memory_usage(mem_pool *pool);
  */
 void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size);
 
+/**
+ * 销毁内存池及相关资源
+ * 注意：调用该函数后，不应再访问已释放的内存池及其相关资源。
+ * @param pool 内存池
+ */
+void mem_pool_destroy(mem_pool *pool);
+
 #endif /* MEM_POOL_H */
