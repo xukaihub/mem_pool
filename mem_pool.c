@@ -1,4 +1,5 @@
 #include "mem_pool.h"
+#include "mem_pool_lock.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -15,7 +16,8 @@ typedef struct mem_block {
 struct mem_pool {
     void *start;
     size_t size;
-    struct mem_block *head;
+    mem_block *head;
+    mem_pool_lock *lock;
 };
 
 mem_pool *mem_init(void *start, size_t size)
@@ -30,23 +32,32 @@ mem_pool *mem_init(void *start, size_t size)
         printf("Failed to initialize memory pool\n");
         return NULL;
     }
-
     pool->start = start;
     pool->size = size;
     pool->head = NULL;
+
     mem_block *block = (mem_block *)malloc(sizeof(mem_block));
     if (block == NULL) {
         printf("Failed to initialize memory block\n");
         free(pool);
         return NULL;
     }
-
     block->start = start;
     block->size = size;
     block->used = 0;
     block->next = NULL;
 
     pool->head = block;
+
+    pool->lock = (mem_pool_lock*)malloc(sizeof(mem_pool_lock));
+    if (pool->lock == NULL) {
+        printf("Failed to initialize memory pool lock");
+        free(block);
+        free(pool);
+        return NULL;
+    }
+    mem_pool_lock_init(pool->lock);
+
     return pool;
 }
 
@@ -59,12 +70,14 @@ void print_used_blocks(mem_pool *pool)
 
     printf("Used blocks:\n");
     mem_block *block = pool->head;
+    mem_pool_lock_acquire(pool->lock);
     while (block) {
         if (block->used) {
             printf("Start: %p, Size: %zu\n", block->start, block->size);
         }
         block = block->next;
     }
+    mem_pool_lock_release(pool->lock);
 }
 
 void print_free_blocks(mem_pool *pool)
@@ -76,12 +89,14 @@ void print_free_blocks(mem_pool *pool)
 
     printf("Free blocks:\n");
     mem_block *block = pool->head;
+    mem_pool_lock_acquire(pool->lock);
     while (block) {
         if (!block->used) {
             printf("Start: %p, Size: %zu\n", block->start, block->size);
         }
         block = block->next;
     }
+    mem_pool_lock_release(pool->lock);
 }
 
 void *mem_malloc(mem_pool *pool, size_t size)
@@ -96,6 +111,8 @@ void *mem_malloc(mem_pool *pool, size_t size)
         return NULL;
     }
 
+    mem_pool_lock_acquire(pool->lock);
+
     mem_block *block = pool->head;
     size = (size + ALIGNMENT - 1) & ~(ALIGNMENT - 1); // round up to nearest multiple of ALIGNMENT
     while (block) {
@@ -105,6 +122,7 @@ void *mem_malloc(mem_pool *pool, size_t size)
                 mem_block *new_block = (mem_block *)malloc(sizeof(mem_block));
                 if (new_block == NULL) {
                     printf("Memory allocation failed\n");
+                    mem_pool_lock_release(pool->lock);
                     return NULL;
                 }
 
@@ -118,10 +136,13 @@ void *mem_malloc(mem_pool *pool, size_t size)
             }
 
             block->used = 1;
+            mem_pool_lock_release(pool->lock);
             return block->start;
         }
         block = block->next;
     }
+
+    mem_pool_lock_release(pool->lock);
     return NULL;
 }
 
@@ -136,6 +157,8 @@ void mem_free(mem_pool *pool, void *ptr)
         printf("Invalid memory block\n");
         return;
     }
+
+    mem_pool_lock_acquire(pool->lock);
 
     mem_block *block = pool->head;
     mem_block *prev = NULL;
@@ -156,6 +179,7 @@ void mem_free(mem_pool *pool, void *ptr)
                 free(block);
             }
 
+            mem_pool_lock_release(pool->lock);
             return;
         }
         prev = block;
@@ -173,6 +197,7 @@ void print_memory_usage(mem_pool *pool)
     printf("Memory usage (0: free, 1: used):\n");
     char *cursor = (char *)pool->head->start;
     int bit_count = 0;
+    mem_pool_lock_acquire(pool->lock);
     for (mem_block *block = pool->head; block; block = block->next) {
         while (cursor < (char *)block->start) {
             printf("0");
@@ -193,6 +218,7 @@ void print_memory_usage(mem_pool *pool)
             }
         }
     }
+    mem_pool_lock_release(pool->lock);
     printf("\n");
 }
 
@@ -202,6 +228,7 @@ void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size) {
         return;
     }
 
+    mem_pool_lock_acquire(pool->lock);
     *total_size = pool->size;
 
     size_t used_size = 0;
@@ -212,6 +239,7 @@ void get_memory_info(mem_pool *pool, size_t *total_size, size_t *free_size) {
         }
         block = block->next;
     }
+    mem_pool_lock_release(pool->lock);
 
     *free_size = pool->size - used_size;
 }
